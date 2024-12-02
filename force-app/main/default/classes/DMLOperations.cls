@@ -180,77 +180,75 @@ public with sharing class DMLOperations {
      * @param oppNames The list of Opportunity names.
      */
      public static void upsertOpportunities(String accountName, List<String> oppNames) {
-        String accName = accountName;
-        // newly created based on watching Homework Help 4.2 to create the Account if it does not already exist
-        List<Account> acc = [SELECT Id FROM Account WHERE Name = :accountName];
-        if(acc.isEmpty()){
-            Account accNew = new Account(Name = accountName);           
-            upsert accNew;
-
+        List<Account> acc = [Select Id From Account Where Name = :accountName];
+            if ( acc.isEmpty()) {
+            Account newAcc = new Account(Name = accountName);
+            upsert newAcc;
+            }
             acc = [SELECT Id FROM Account WHERE Name = :accountName];
-        }
-        // then relate or create all opps in the oppName list with the acc
-        List<Opportunity> existingOpps = [SELECT Id, Name FROM Opportunity WHERE Name IN :oppNames];
-        List<String> existingNames = new List<String>();
-            for ( Opportunity exOpp : existingOpps){
-           existingNames.add(exOpp.Name);
-        }
-        // Loop through each Opportunity name
-        
-        List<Opportunity> oppsToUpsert = new List<Opportunity>();
-        for(String name : oppNames){  
-            Opportunity opp = new Opportunity();
-           if( !existingNames.contains(name) ){    
-            opp.Name = name;
-            opp.AccountId = acc[0].Id;
-            opp.StageName = 'Qualification';
-            opp.CloseDate = Date.today().addMonths(3);
-            oppsToUpsert.add(opp);       
-            } 
-           
-        }   upsert oppsToUpsert; 
-        // Add the Opportunity to the list  
-                    
-    }                             
+            // Loop through each Opportunity name
+        List<Opportunity> existingOpps = [SELECT Name, Id FROM Opportunity WHERE Name IN :oppNames];
+            List<String> existingNames = new List<String>();
+            for (Opportunity exOpp : existingOpps){
+                existingNames.add(exOpp.Name);
 
-    
-    /**
+            }
+             // Add the Opportunity to the list 
+            List<Opportunity> oppsToUpsert = new List<Opportunity>();
+            for ( String name : oppNames){
+                if( !existingNames.contains(name) ){
+                Opportunity newOpp = new Opportunity();
+                    newOpp.name = name;
+                    newOpp.StageName = 'Qualification';
+                    newOpp.AccountId = acc[0].Id;
+                    newOpp.CloseDate = Date.today().addMonths(3);
+                    oppsToUpsert.add(newOpp);
+                }
+                
+            } upsert oppsToUpsert;
+                
+        }
+                                               
+
+   /**
      * Question 9
-	 * Upserts an Account with the specified name.
-	 * If an Account with the given name already exists, update the description to "Updated Account".
-	 * If no such Account exists, it creates a new one and sets the description to "New Account".
-	 * @param accountName The name of the Account to be upserted.
-	 * @return The Account that was upserted.
-	 */
-	 public static Account upsertAccount(String accountName) {
-		// Query for the Account
-        // List<Account> accounts = [SELECT Id FROM Account WHERE Name = :accountName];
+     * Upserts an Account with the specified name.
+     * If an Account with the given name already exists, update the description to "Updated Account".
+     * If no such Account exists, it creates a new one and sets the description to "New Account".
+     * @param accountName The name of the Account to be upserted.
+     * @return The Account that was upserted.
+     */
+    public static Account upsertAccount(String accountName) {
+        // Query for the Account
         List<Account> accList = [SELECT Id, Name FROM Account WHERE Name = :accountName];
         Account acc1 = new Account();
-		// if the Account exists, update the description
-        for ( Account acc : accList ) {  
+        
+        // if the Account exists, update the description
+        for (Account acc : accList) {  
             acc1 = acc;    
             acc1.Description = 'Updated Account';
-            }
-            // otherwise, create a new Account and set the description
-            if(accList.isEmpty()){          
-                acc1.Name = accountName;
-                acc1.Description = 'New Account';
-            } upsert acc1;	
-        return acc1;// Upsert the Account 
-        	
-	}
+        }
+        
+        // otherwise, create a new Account and set the description
+        if(accList.isEmpty()) {          
+            acc1.Name = accountName;
+            acc1.Description = 'New Account';
+        }
+        
+        upsert acc1;    
+        return acc1;
+    } 
 
     /**
      * Question 10
-	 * Manage the association between Contacts and Accounts
-	 * Ensure that for each Contact in the provided list, there is a corresponding Account Name that matches the Contact's last name.
-	 * If such an Account does not exist, the method creates it; if it does, the method ensures the Contact is associated with it. (Hint: use previous upsertAccount method - this may cause bad practices but for learning purposes it's okay.)
+     * Manage the association between Contacts and Accounts
+     * Ensure that for each Contact in the provided list, there is a corresponding Account Name that matches the Contact's last name.
+     * If such an Account does not exist, the method creates it; if it does, the method ensures the Contact is associated with it.
      * Example Contact.LastName = 'Doe' Link to Account.Name = 'Doe' 
      * Example Contact.LastName = 'Jane' Link to Account.Name = 'Jane'
-	 * @param contactsToUpsert List of Contacts to be upserted and linked to accounts.
-	 */
-	public static void upsertAccountsWithContacts(List<Contact> contactsToUpsert) {
+     * @param contactsToUpsert List of Contacts to be upserted and linked to accounts.
+     */
+    public static void upsertAccountsWithContacts(List<Contact> contactsToUpsert) {
         List<String> contNames = new List<String>();
         String accName;
 		// Loop through each Contact
@@ -277,7 +275,7 @@ public with sharing class DMLOperations {
             }
         } // Upsert the Contacts 
         upsert contactsToUpsert;           
-	}
+	} 
 
     /**
      * Question 11
@@ -316,7 +314,7 @@ public with sharing class DMLOperations {
     public static void createAndDeleteCases(String accountId, Integer numOfCases) {
         // Insert the cases
         List<Case> cases = new List<Case>();
-Case cs = new Case();
+        Case cs = new Case();
         for ( Integer i = 0; i < numOfCases; i++ ) {
             cs.Subject = 'test case';
             cs.Status = 'New';
