@@ -191,7 +191,6 @@ public with sharing class DMLOperations {
             List<String> existingNames = new List<String>();
             for (Opportunity exOpp : existingOpps){
                 existingNames.add(exOpp.Name);
-
             }
              // Add the Opportunity to the list 
             List<Opportunity> oppsToUpsert = new List<Opportunity>();
